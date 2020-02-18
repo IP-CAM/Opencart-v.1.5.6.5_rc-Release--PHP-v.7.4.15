@@ -8,3 +8,6 @@ Since it's Debut, Opencart v.1.5.6.5_rc was known, to be top-solid, top-secure, 
 The Version OpenCart 1.5.6.5_rc was never given 'Final v.1.5.6.5' Status officially. In plain fear of Competition, I assume, because unfamous OC v.2.0 existed for some Months already, when 1.5.6.5_rc was made public by an Official on the OC Github Developer Site. But most everything on Add-On's for 1.5.6.x. Versions existed already. So, just re-announcing a new 'final' (older) Version would have harmed the new OC v.2 Market, since OC v.1.5.6.5 would have been favoured by parts of the OC Crowd for some time to come ...
 
 Ernie's Opencart LIGHT + V-PRO are fully built on (slightly php7/secured/upgraded) OC v.1.5.6.5 (_rc) 'System' Code. But I replaced the outdated non-responsive 1.5.6.4 default Theme with popular Bootstrap + FontAwesome styled OC Theme Extensions, making them to the 'speediest' responsive OpenCart Themes around.
+
+OpenCart v.1.5.6.5_rc Changelog:
+https://github.com/opencart/opencart/blob/c2c8f9c4c8fce44bb81b394e235913306fb75707/changelog.md
