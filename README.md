@@ -1,5 +1,5 @@
 # Opencart-1.5.6.5_RC
-Original OpenCart v.1.5.6.5_rc Release Candidate Download for the OC Site
+Original OpenCart v.1.5.6.5_rc Release Candidate Download from the official Opencart.com Github Site
 
 History in Short, from a distant + neutral Swiss Point of View:
 
