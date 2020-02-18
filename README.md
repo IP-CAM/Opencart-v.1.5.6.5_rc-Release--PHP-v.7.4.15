@@ -9,5 +9,6 @@ The Version OpenCart 1.5.6.5_rc was never given 'Final v.1.5.6.5' Status officia
 
 Ernie's Opencart LIGHT + V-PRO are fully built on (slightly php7/secured/upgraded) OC v.1.5.6.5 (_rc) 'System' Code. But I replaced the outdated non-responsive 1.5.6.4 default Theme with popular Bootstrap + FontAwesome styled OC Theme Extensions, making them to the 'speediest' responsive OpenCart Themes around.
 
-OpenCart v.1.5.6.5_rc Changelog:
+Official OpenCart v.1.5.6.5_rc Changelog:
+
 https://github.com/opencart/opencart/blob/c2c8f9c4c8fce44bb81b394e235913306fb75707/changelog.md
