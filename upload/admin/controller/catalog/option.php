@@ -3,6 +3,13 @@ class ControllerCatalogOption extends Controller {
 	private $error = array();  
 
 	public function index() {
+
+	// JTI MOD
+	if ($this->db->query('SHOW COLUMNS FROM `' . DB_PREFIX . 'option` LIKE "display_type"')->num_rows == 0) {
+		$this->db->query("ALTER TABLE `" . DB_PREFIX . "option` ADD `display_type` INT(3) NOT NULL DEFAULT '0' COMMENT '0 = Default, 1 = Box' AFTER `type`");
+	}
+	// JTI MOD 
+
 		$this->language->load('catalog/option');
 
 		$this->document->setTitle($this->language->get('heading_title'));
@@ -124,7 +131,7 @@ class ControllerCatalogOption extends Controller {
 		}
 
 		if (isset($this->request->get['page'])) {
-			$page = $this->request->get['page'];
+			$page = (int)$this->request->get['page'];
 		} else {
 			$page = 1;
 		}
@@ -244,10 +251,11 @@ class ControllerCatalogOption extends Controller {
 		$pagination->total = $option_total;
 		$pagination->page = $page;
 		$pagination->limit = $this->config->get('config_admin_limit');
-		$pagination->text = $this->language->get('text_pagination');
 		$pagination->url = $this->url->link('catalog/option', 'token=' . $this->session->data['token'] . $url . '&page={page}', 'SSL');
 
 		$this->data['pagination'] = $pagination->render();
+
+		$this->data['results'] = sprintf($this->language->get('text_pagination'), ($option_total) ? (($page - 1) * $this->config->get('config_admin_limit')) + 1 : 0, ((($page - 1) * $this->config->get('config_admin_limit')) > ($option_total - $this->config->get('config_admin_limit'))) ? $option_total : ((($page - 1) * $this->config->get('config_admin_limit')) + $this->config->get('config_admin_limit')), $option_total, ceil($option_total / $this->config->get('config_admin_limit')));
 
 		$this->data['sort'] = $sort;
 		$this->data['order'] = $order;
@@ -282,6 +290,11 @@ class ControllerCatalogOption extends Controller {
 
 		$this->data['entry_name'] = $this->language->get('entry_name');
 		$this->data['entry_type'] = $this->language->get('entry_type');
+
+		//JTI MOD
+		$this->data['entry_display_type'] = $this->language->get('entry_display_type');
+		//JTI MOD
+
 		$this->data['entry_option_value'] = $this->language->get('entry_option_value');
 		$this->data['entry_image'] = $this->language->get('entry_image');
 		$this->data['entry_sort_order'] = $this->language->get('entry_sort_order');
@@ -370,6 +383,16 @@ class ControllerCatalogOption extends Controller {
 		} else {
 			$this->data['type'] = '';
 		}
+
+		//JTI MOD
+		if (isset($this->request->post['display_type'])) {
+			$this->data['display_type'] = $this->request->post['display_type'];
+		} elseif (!empty($option_info)) {
+			$this->data['display_type'] = $option_info['display_type'];
+		} else {
+			$this->data['display_type'] = '0';
+		}
+		//JTI MOD
 
 		if (isset($this->request->post['sort_order'])) {
 			$this->data['sort_order'] = $this->request->post['sort_order'];
