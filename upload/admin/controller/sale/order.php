@@ -2,7 +2,14 @@
 class ControllerSaleOrder extends Controller {
 	private $error = array();
 
-	public function index() {
+	// Resend mails
+	public function resend_mails() {
+	$this->load->model('checkout/order');
+	$res = $this->model_checkout_order->resend_mails($_REQUEST['oid']);
+	echo json_encode(array('error' => false, 'msg' => 'eMail sent!'));
+	}
+	
+	public function index() {	
 		$this->language->load('sale/order');
 
 		$this->document->setTitle($this->language->get('heading_title'));
@@ -134,7 +141,6 @@ class ControllerSaleOrder extends Controller {
 		if (isset($this->request->post['selected']) && ($this->validateDelete())) {
 			foreach ($this->request->post['selected'] as $order_id) {
 				$this->model_sale_order->deleteOrder($order_id);
-				$this->openbay->deleteOrder($order_id);
 			}
 
 			$this->session->data['success'] = $this->language->get('text_success');
@@ -233,7 +239,7 @@ class ControllerSaleOrder extends Controller {
 		}
 
 		if (isset($this->request->get['page'])) {
-			$page = $this->request->get['page'];
+			$page = (int)$this->request->get['page'];
 		} else {
 			$page = 1;
 		}
@@ -352,7 +358,6 @@ class ControllerSaleOrder extends Controller {
 		$this->data['column_date_added'] = $this->language->get('column_date_added');
 		$this->data['column_date_modified'] = $this->language->get('column_date_modified');
 		$this->data['column_action'] = $this->language->get('column_action');
-
 		$this->data['button_invoice'] = $this->language->get('button_invoice');
 		$this->data['button_insert'] = $this->language->get('button_insert');
 		$this->data['button_delete'] = $this->language->get('button_delete');
@@ -455,10 +460,11 @@ class ControllerSaleOrder extends Controller {
 		$pagination->total = $order_total;
 		$pagination->page = $page;
 		$pagination->limit = $this->config->get('config_admin_limit');
-		$pagination->text = $this->language->get('text_pagination');
 		$pagination->url = $this->url->link('sale/order', 'token=' . $this->session->data['token'] . $url . '&page={page}', 'SSL');
 
 		$this->data['pagination'] = $pagination->render();
+
+		$this->data['results'] = sprintf($this->language->get('text_pagination'), ($order_total) ? (($page - 1) * $this->config->get('config_admin_limit')) + 1 : 0, ((($page - 1) * $this->config->get('config_admin_limit')) > ($order_total - $this->config->get('config_admin_limit'))) ? $order_total : ((($page - 1) * $this->config->get('config_admin_limit')) + $this->config->get('config_admin_limit')), $order_total, ceil($order_total / $this->config->get('config_admin_limit')));
 
 		$this->data['filter_order_id'] = $filter_order_id;
 		$this->data['filter_customer'] = $filter_customer;
@@ -1348,8 +1354,6 @@ class ControllerSaleOrder extends Controller {
 			$this->document->setTitle($this->language->get('heading_title'));
 
 			$this->data['heading_title'] = $this->language->get('heading_title');
-
-			$this->data['text_amazon_order_id'] = $this->language->get('text_amazon_order_id');
 			$this->data['text_name'] = $this->language->get('text_name');
 			$this->data['text_order_id'] = $this->language->get('text_order_id');
 			$this->data['text_invoice_no'] = $this->language->get('text_invoice_no');
@@ -1536,7 +1540,6 @@ class ControllerSaleOrder extends Controller {
 				$this->data['invoice_no'] = '';
 			}
 
-			$this->data['amazon_order_id'] = $order_info['amazon_order_id'];
 			$this->data['store_name'] = $order_info['store_name'];
 			$this->data['store_url'] = $order_info['store_url'];
 			$this->data['firstname'] = $order_info['firstname'];
@@ -1665,6 +1668,7 @@ class ControllerSaleOrder extends Controller {
 					'product_id'       => $product['product_id'],
 					'name'    	 	   => $product['name'],
 					'model'    		   => $product['model'],
+					'description'       => htmlspecialchars_decode(substr($product['description'],0,80)),
 					'option'   		   => $option_data,
 					'quantity'		   => $product['quantity'],
 					'price'    		   => $this->currency->format($product['price'] + ($this->config->get('config_tax') ? $product['tax'] : 0), $order_info['currency_code'], $order_info['currency_value']),
@@ -2180,7 +2184,7 @@ class ControllerSaleOrder extends Controller {
 		$this->data['column_comment'] = $this->language->get('column_comment');
 
 		if (isset($this->request->get['page'])) {
-			$page = $this->request->get['page'];
+			$page = (int)$this->request->get['page'];
 		} else {
 			$page = 1;
 		}
@@ -2226,7 +2230,12 @@ class ControllerSaleOrder extends Controller {
 		$option_info = $this->model_sale_order->getOrderOption($this->request->get['order_id'], $order_option_id);
 
 		if ($option_info && $option_info['type'] == 'file') {
-			$file = DIR_DOWNLOAD . $option_info['value'];
+
+// JTI MOD Prevent path traversal with download files https://github.com/opencart-ce/opencart-ce/commit/f42e875ebed733e163d60dfb80e2aa0a95dc8287
+	//	$file = DIR_DOWNLOAD . $option_info['value'];
+		$file = DIR_DOWNLOAD . basename($option_info['value']);
+// END JTI MOD
+
 			$mask = basename(utf8_substr($option_info['value'], 0, utf8_strrpos($option_info['value'], '.')));
 
 			if (!headers_sent()) {
@@ -2377,22 +2386,17 @@ class ControllerSaleOrder extends Controller {
 		$this->data['text_ship_to'] = $this->language->get('text_ship_to');
 		$this->data['text_payment_method'] = $this->language->get('text_payment_method');
 		$this->data['text_shipping_method'] = $this->language->get('text_shipping_method');
-
 		$this->data['column_product'] = $this->language->get('column_product');
 		$this->data['column_model'] = $this->language->get('column_model');
 		$this->data['column_quantity'] = $this->language->get('column_quantity');
 		$this->data['column_price'] = $this->language->get('column_price');
 		$this->data['column_total'] = $this->language->get('column_total');
 		$this->data['column_comment'] = $this->language->get('column_comment');
-
 		$this->load->model('sale/order');
-
 		$this->load->model('setting/setting');
 
 		$this->data['orders'] = array();
-
 		$orders = array();
-
 		if (isset($this->request->post['selected'])) {
 			$orders = $this->request->post['selected'];
 		} elseif (isset($this->request->get['order_id'])) {
@@ -2422,7 +2426,7 @@ class ControllerSaleOrder extends Controller {
 				} else {
 					$invoice_no = '';
 				}
-
+	
 				if ($order_info['shipping_address_format']) {
 					$format = $order_info['shipping_address_format'];
 				} else {
@@ -2490,9 +2494,7 @@ class ControllerSaleOrder extends Controller {
 				);
 
 				$payment_address = str_replace(array("\r\n", "\r", "\n"), '<br />', preg_replace(array("/\s\s+/", "/\r\r+/", "/\n\n+/"), '<br />', trim(str_replace($find, $replace, $format))));
-
 				$product_data = array();
-
 				$products = $this->model_sale_order->getOrderProducts($order_id);
 
 				foreach ($products as $product) {
@@ -2515,6 +2517,7 @@ class ControllerSaleOrder extends Controller {
 
 					$product_data[] = array(
 						'name'     => $product['name'],
+						'description'  => htmlspecialchars_decode(substr($product['description'],0,80)),
 						'model'    => $product['model'],
 						'option'   => $option_data,
 						'quantity' => $product['quantity'],

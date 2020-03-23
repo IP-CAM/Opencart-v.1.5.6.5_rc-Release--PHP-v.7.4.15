@@ -1,6 +1,11 @@
 <?php
 class ModelCheckoutCoupon extends Model {
-	public function getCoupon($code) {
+
+	// JTI MOD COUPON FIX - forum.opencart.com/viewtopic.php?f=161&t=65018
+	//	public function getCoupon($code) {
+		public function getCoupon($code,$noverify=0) {
+	// END JTI MOD COUPON FIX
+
 		$status = true;
 
 		$coupon_query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "coupon` WHERE code = '" . $this->db->escape($code) . "' AND ((date_start = '0000-00-00' OR date_start < NOW()) AND (date_end = '0000-00-00' OR date_end > NOW())) AND status = '1'");
@@ -75,7 +80,11 @@ class ModelCheckoutCoupon extends Model {
 			$status = false;
 		}
 
-		if ($status) {
+	// JTI MOD COUPON FIX - forum.opencart.com/viewtopic.php?f=161&t=65018
+	//	if ($status) {
+		if (($status)||($noverify)) {
+	// END JTI MOD COUPON FIX		
+
 			return array(
 				'coupon_id'     => $coupon_query->row['coupon_id'],
 				'code'          => $coupon_query->row['code'],

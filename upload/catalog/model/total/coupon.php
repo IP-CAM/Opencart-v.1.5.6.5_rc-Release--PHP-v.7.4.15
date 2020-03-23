@@ -100,7 +100,10 @@ class ModelTotalCoupon extends Model {
 
 		$this->load->model('checkout/coupon');
 
-		$coupon_info = $this->model_checkout_coupon->getCoupon($code);
+	// JTI MOD COUPON FIX - forum.opencart.com/viewtopic.php?f=161&t=65018
+	//	$coupon_info = $this->model_checkout_coupon->getCoupon($code);
+		$coupon_info = $this->model_checkout_coupon->getCoupon($code,1);
+	// END JTI MOD COUPON FIX
 
 		if ($coupon_info) {
 			$this->model_checkout_coupon->redeem($coupon_info['coupon_id'], $order_info['order_id'], $order_info['customer_id'], $order_total['value']);	
