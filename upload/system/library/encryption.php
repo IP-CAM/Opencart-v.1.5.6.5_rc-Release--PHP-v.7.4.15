@@ -1,30 +1,28 @@
 <?php
-// *	@copyright	OPENCART.PRO 2011 - 2020.
-// *	@forum		http://forum.opencart.pro
-// *	@source		See SOURCE.txt for source and other copyright.
-// *	@license	GNU General Public License version 3; see LICENSE.txt
-
 final class Encryption {
+	
+	private $cipher = 'aes-256-ctr';
+	private $digest = 'sha256';
 	private $key;
-
+	
 	public function __construct($key) {
-		$this->key = hash('sha256', $key, true);
+		$this->key = $key;
 	}
 
 	public function encrypt($value) {
-		if (version_compare(phpversion(), '7.1.0', '>') == true || !function_exists('mcrypt_encrypt')) {
-			return strtr(base64_encode(openssl_encrypt($value, 'aes-128-cbc', $this->key)), '+/=', '-_,');
-		} else {
-			return strtr(base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, hash('sha256', $this->key, true), $value, MCRYPT_MODE_ECB)), '+/=', '-_,');
-		}
+		$key       = openssl_digest($this->key, $this->digest, true);
+		$iv_length = openssl_cipher_iv_length($this->cipher);
+		$iv        = openssl_random_pseudo_bytes($iv_length);
+		return base64_encode($iv . openssl_encrypt($value, $this->cipher, $key, OPENSSL_RAW_DATA, $iv));
 	}
-
+	
 	public function decrypt($value) {
-		if (version_compare(phpversion(), '7.1.0', '>') == true || !function_exists('mcrypt_encrypt')) {
-			return trim(openssl_decrypt(base64_decode(strtr($value, '-_,', '+/=')), 'aes-128-cbc', $this->key));
-		} else {
-			return trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, hash('sha256', $this->key, true), base64_decode(strtr($value, '-_,', '+/=')), MCRYPT_MODE_ECB));
-		}
+		$key       = openssl_digest($this->key, $this->digest, true);
+		$iv_length = openssl_cipher_iv_length($this->cipher);
+		$value     = base64_decode($value);
+		$iv        = substr($value, 0, $iv_length);
+		$value     = substr($value, $iv_length);
+		return openssl_decrypt($value, $this->cipher, $key, OPENSSL_RAW_DATA, $iv);
 	}
 }
 ?>
