@@ -1,6 +1,10 @@
 # Opencart-1.5.6.5_RC Version
 Original OpenCart v.1.5.6.5_rc Release Candidate Download from the official Opencart.com Github Site
 
+New encryption.php File added, to make make it installable with PHP v.7.4.13 Versions :
+
+https://www.opencart.com/index.php?route=marketplace/extension/info&extension_id=38012
+
 History in Short, from a distant + neutral Swiss Point of View:
 
 Since it's Debut, Opencart v.1.5.6.5_rc was known, to be top-solid, top-secure, and fast, and not a single Topic yet exists on v.1.5.6.5 Problems, from someone using this Version, as I recall, during my ~Years of rather intense OC Forum Activity (~11'200 Topic Replies). And for me, all this makes OC v.1.5.6.5_rc still the Number One Choice, if one not only looks for Version Numbers, but simply for a proven solid and also simple to handle final Onlineshop Version Class Release!
