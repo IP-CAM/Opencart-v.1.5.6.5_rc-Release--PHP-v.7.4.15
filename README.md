@@ -1,5 +1,5 @@
 # Opencart-1.5.6.5_rc Release Candidate Version
-Original OpenCart v.1.5.6.5_RC Release Candidate Download from the official Opencart.com Github Site
+Original OpenCart v.1.5.6.5_rc Release Candidate Download from the official Opencart.com Github Site
 
 New encryption.php File added, to make make it installable with PHP v.7.4.13 Versions :
 
