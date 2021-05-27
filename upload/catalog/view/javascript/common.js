@@ -26,10 +26,24 @@ $(document).ready(function() {
 		}
 	});
 	
+	
 	/* Ajax Cart */
+	$('html').on('touchend.tap', function(){
+  	if ($('#cart').hasClass('active')){
+		$('#cart').removeClass('active')
+	}
+	});
+
+	$('div#cart').on('touchend.tap', function(e){
+	e.stopPropagation();
+	});
+
 	$('#cart > .heading a').live('click', function() {
-		$('#cart').addClass('active');
-		
+		if ($('#cart').hasClass('active')){
+    			$('#cart').removeClass('active')
+		} else {
+			$('#cart').addClass('active');
+		}
 		$('#cart').load('index.php?route=module/cart #cart > *');
 		
 		$('#cart').live('mouseleave', function() {
