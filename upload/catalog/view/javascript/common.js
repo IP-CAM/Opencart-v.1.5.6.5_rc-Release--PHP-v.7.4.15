@@ -26,7 +26,6 @@ $(document).ready(function() {
 		}
 	});
 	
-	
 	/* Ajax Cart */
 	$('html').on('touchend.tap', function(){
   	if ($('#cart').hasClass('active')){
