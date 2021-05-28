@@ -121,6 +121,7 @@ $('#payment-address input[name=\'customer_group_id\']:checked').live('change', f
 		if (customer_group[this.value]['company_id_display'] == '1') {
 			$('#company-id-display').show();
 		} else {
+			document.querySelector('[name="company_id"]').value = '';
 			$('#company-id-display').hide();
 		}
 		
@@ -133,6 +134,7 @@ $('#payment-address input[name=\'customer_group_id\']:checked').live('change', f
 		if (customer_group[this.value]['tax_id_display'] == '1') {
 			$('#tax-id-display').show();
 		} else {
+			document.querySelector('[name="tax_id"]').value = '';
 			$('#tax-id-display').hide();
 		}
 		
