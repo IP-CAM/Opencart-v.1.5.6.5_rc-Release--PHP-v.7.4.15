@@ -64,14 +64,14 @@
               </tr>
               <tr>
                 <td><?php echo $entry_password; ?></td>
-                <td><input type="password" name="password" value="<?php echo $password; ?>"  />
+                <td><input type="password" name="password" autocomplete="new-password" value="<?php echo $password; ?>"  />
                   <?php if ($error_password) { ?>
                   <span class="error"><?php echo $error_password; ?></span>
                   <?php  } ?></td>
               </tr>
               <tr>
                 <td><?php echo $entry_confirm; ?></td>
-                <td><input type="password" name="confirm" value="<?php echo $confirm; ?>" />
+                <td><input type="password" name="confirm" autocomplete="new-password" value="<?php echo $confirm; ?>" />
                   <?php if ($error_confirm) { ?>
                   <span class="error"><?php echo $error_confirm; ?></span>
                   <?php  } ?></td>
