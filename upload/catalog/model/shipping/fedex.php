@@ -22,7 +22,14 @@ class ModelShippingFedex extends Model {
 			$weight_code = strtoupper($this->weight->getUnit($this->config->get('fedex_weight_class_id')));
 
 			$date = time();
-
+			//increase 1 day
+			//$date += 86400;
+			//add 12 hours if the time is after 12:00. If you send the rate request at 23:59 after the cuttoff time, it will still count as being shipped today
+			//if your business cutoff is 14:00, you could change 12 to 14 and add 10 hours or 36000 seconds
+			$hour = date('G', $date);
+			if ($hour >= 12) {
+				$date += 43200;
+			}
 			$day = date('l', $date);
 
 			if ($day == 'Saturday') {
@@ -73,16 +80,25 @@ class ModelShippingFedex extends Model {
 			$xml .= '				<ns1:PackagingType>' . $this->config->get('fedex_packaging_type') . '</ns1:PackagingType>';					
 			$xml .= '				<ns1:Shipper>';
 			$xml .= '					<ns1:Contact>';
-			$xml .= '						<ns1:PersonName>' . $this->config->get('config_owner') . '</ns1:PersonName>';
-			$xml .= '						<ns1:CompanyName>' . $this->config->get('config_name') . '</ns1:CompanyName>';
-			$xml .= '						<ns1:PhoneNumber>' . $this->config->get('config_telephone') . '</ns1:PhoneNumber>';
+			//$xml .= '						<ns1:PersonName>' . $this->config->get('config_owner') . '</ns1:PersonName>';
+			//$xml .= '						<ns1:CompanyName>' . $this->config->get('config_name') . '</ns1:CompanyName>';
+			//$xml .= '						<ns1:PhoneNumber>' . $this->config->get('config_telephone') . '</ns1:PhoneNumber>';
+			// remove personal information for GDPR
+			$xml .= '						<ns1:PersonName></ns1:PersonName>';
+			$xml .= '						<ns1:CompanyName></ns1:CompanyName>';
+			$xml .= '						<ns1:PhoneNumber></ns1:PhoneNumber>';
 			$xml .= '					</ns1:Contact>';
 			$xml .= '					<ns1:Address>';
 
-			if ($country_info['iso_code_2'] == 'US') {
+			//if ($country_info['iso_code_2'] == 'US') {
+			// province is required for Canada
+			if (in_array($country_info['iso_code_2'], array('US', 'CA'))) {
 				$xml .= '						<ns1:StateOrProvinceCode>' . ($zone_info ? $zone_info['code'] : '') . '</ns1:StateOrProvinceCode>';
 			} else {
-				$xml .= '						<ns1:StateOrProvinceCode>' . ($zone_info ? $zone_info['name'] : '') . '</ns1:StateOrProvinceCode>';
+				//$xml .= '						<ns1:StateOrProvinceCode>' . ($zone_info ? $zone_info['name'] : '') . '</ns1:StateOrProvinceCode>';
+				// misspelled province will throw an error. some countries require specific 2 letter codes, which opencart does not have
+				// so far, the rates seem to be correct without province
+				$xml .= '						<ns1:StateOrProvinceCode></ns1:StateOrProvinceCode>';
 			}
 
 			$xml .= '						<ns1:PostalCode>' . $this->config->get('fedex_postcode') . '</ns1:PostalCode>';
@@ -92,18 +108,29 @@ class ModelShippingFedex extends Model {
 
 			$xml .= '				<ns1:Recipient>';
 			$xml .= '					<ns1:Contact>';
-			$xml .= '						<ns1:PersonName>' . $address['firstname'] . ' ' . $address['lastname'] . '</ns1:PersonName>';
-			$xml .= '						<ns1:CompanyName>' . $address['company'] . '</ns1:CompanyName>';
-			$xml .= '						<ns1:PhoneNumber>' . $this->customer->getTelephone() . '</ns1:PhoneNumber>';
+			//$xml .= '						<ns1:PersonName>' . $address['firstname'] . ' ' . $address['lastname'] . '</ns1:PersonName>';
+			//$xml .= '						<ns1:CompanyName>' . $address['company'] . '</ns1:CompanyName>';
+			//$xml .= '						<ns1:PhoneNumber>' . $this->customer->getTelephone() . '</ns1:PhoneNumber>';
+			// remove personal information for GDPR
+			$xml .= '						<ns1:PersonName></ns1:PersonName>';
+			$xml .= '						<ns1:CompanyName></ns1:CompanyName>';
+			$xml .= '						<ns1:PhoneNumber></ns1:PhoneNumber>';
 			$xml .= '					</ns1:Contact>';
 			$xml .= '					<ns1:Address>';
-			$xml .= '						<ns1:StreetLines>' . $address['address_1'] . '</ns1:StreetLines>';
+			// remove personal information for GDPR, street does not seem to affect the rates
+			//$xml .= '						<ns1:StreetLines>' . $address['address_1'] . '</ns1:StreetLines>';
+			$xml .= '						<ns1:StreetLines></ns1:StreetLines>';
 			$xml .= '						<ns1:City>' . $address['city'] . '</ns1:City>';
 
-			if ($address['iso_code_2'] == 'US') {
+			//if ($address['iso_code_2'] == 'US') {
+			// province is required for Canada
+			if (in_array($address['iso_code_2'], array('US', 'CA'))) {
 				$xml .= '						<ns1:StateOrProvinceCode>' . $address['zone_code'] . '</ns1:StateOrProvinceCode>';
 			} else {
-				$xml .= '						<ns1:StateOrProvinceCode>' . $address['zone'] . '</ns1:StateOrProvinceCode>';
+				//$xml .= '						<ns1:StateOrProvinceCode>' . $address['zone'] . '</ns1:StateOrProvinceCode>';
+				// misspelled province will throw an error. some countries require specific 2 letter codes, which opencart does not have
+				// so far, the rates seem to be correct without province
+				$xml .= '						<ns1:StateOrProvinceCode></ns1:StateOrProvinceCode>';
 			}
 
 			$xml .= '						<ns1:PostalCode>' . $address['postcode'] . '</ns1:PostalCode>';
@@ -157,6 +184,7 @@ class ModelShippingFedex extends Model {
 
 			if ($dom->getElementsByTagName('HighestSeverity')->item(0)->nodeValue == 'FAILURE' || $dom->getElementsByTagName('HighestSeverity')->item(0)->nodeValue == 'ERROR') {
 				$error = $dom->getElementsByTagName('HighestSeverity')->item(0)->nodeValue;
+				$this->log->write('FEDEX :: ' . $response);  //log the error
 			} else {
 				$rate_reply_details = $dom->getElementsByTagName('RateReplyDetails');
 
@@ -165,12 +193,15 @@ class ModelShippingFedex extends Model {
 
 					if (in_array(strtoupper($code), $this->config->get('fedex_service'))) {
 						$title = $this->language->get('text_' . $code);
-
-						if ($this->config->get('fedex_display_time')) {
+						
+						//fix for undefined error when the response does not contain a timestamp
+						$delivery_time_stamp = $rate_reply_detail->getElementsByTagName('DeliveryTimestamp');
+						if ($this->config->get('fedex_display_time') && $delivery_time_stamp->length) {
 							$title .= ' (' . $this->language->get('text_eta') . ' ' . date($this->language->get('date_format_short') . ' ' . $this->language->get('time_format'), strtotime($rate_reply_detail->getElementsByTagName('DeliveryTimestamp')->item(0)->nodeValue)) . ')';
 						}
-
-						$total_net_charge = $rate_reply_detail->getElementsByTagName('RatedShipmentDetails')->item(0)->getElementsByTagName('ShipmentRateDetail')->item(0)->getElementsByTagName('TotalNetCharge')->item(0);
+						// replaced TotalNetCharge with TotalNetFedExCharge, because TotalNetCharge includes FedEx sales tax based on the shipper's address. But if you want to include tax for any reason, you can change it back to TotalNetCharge.
+						//$total_net_charge = $rate_reply_detail->getElementsByTagName('RatedShipmentDetails')->item(0)->getElementsByTagName('ShipmentRateDetail')->item(0)->getElementsByTagName('TotalNetCharge')->item(0);
+						$total_net_charge = $rate_reply_detail->getElementsByTagName('RatedShipmentDetails')->item(0)->getElementsByTagName('ShipmentRateDetail')->item(0)->getElementsByTagName('TotalNetFedExCharge')->item(0);
 
 						$cost = $total_net_charge->getElementsByTagName('Amount')->item(0)->nodeValue;
 
